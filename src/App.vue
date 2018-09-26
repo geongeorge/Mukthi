@@ -14,7 +14,7 @@
     <b-button :type="btn"  @wasclicked="wasclicked"></b-button>
   </div>
 </div>
-  
+
   </div>
 </template>
 
@@ -46,8 +46,8 @@ export default {
                       show: false,
                       position: 'top-left'
                     },
-                    
-        
+
+
       },
       btnTypes: [
           "camp",
@@ -93,32 +93,39 @@ export default {
     //   this.mymap = map;
     // },
     axiostest() {
+        var fe = [];
       axios
-      .get('http://www.mocky.io/v2/5babb40731000069006544d2')
+      .get('http://www.ohkwiz.com/api/help/')
       .then(response => {
-        console.log(response.data)
-        this.mymap.addSource("earthquakes", {
-        "type": "geojson",
-        "data": {
-                "type": "FeatureCollection",
-                "features": [
-                  {
-                    "type": "Feature",
-                    "properties": {
-                      "marker-color": "#ef0e24",
-                      "marker-size": "medium",
-                      "marker-symbol": ""
-                    },
-                    "geometry": {
-                      "type": "Point",
-                      "coordinates": [
-                        76.52664184570312,
-                        9.596264590393757
-                      ]
-                    }
-                  }
+          var r = response.data;
+        for (var i = 0;i < r.length;i++) {
+            if (r[i].lat == 'string')
+                continue;
+            fe.push({
+              "type": "Feature",
+              "properties": {
+                "marker-color": "#ef0e24",
+                "marker-size": "medium",
+                "marker-symbol": ""
+              },
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    r[i].lng,
+                    r[i].lat
                 ]
               }
+          });
+        }
+        var d = {
+          "type": "FeatureCollection",
+          "features": fe
+        };
+        console.log(d);
+        console.log(d)
+        this.mymap.addSource("earthquakes", {
+        "type": "geojson",
+        "data": d
       })
       this.mymap.addLayer({
         "id": "earthquakes-heat",
@@ -226,8 +233,8 @@ export default {
             ]
         }
     }, 'waterway-label');
-        
-         
+
+
       })
     },
     wasclicked(event) {
