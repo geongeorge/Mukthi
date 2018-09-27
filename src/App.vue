@@ -55,6 +55,7 @@ export default {
           "help",
           "road"
         ],
+        'url': '',
     }
   },
   methods : {
@@ -92,10 +93,19 @@ export default {
     //   console.log(map)
     //   this.mymap = map;
     // },
-    axiostest() {
-        var fe = [];
+    axiostest(event) {
+        //console.log(event)
+        let fe = [], url = '';
+        if (event == 'help') {
+            this.url = 'http://www.ohkwiz.com/api/help/';
+        } else if (event == 'collection') {
+            this.url = 'http://www.ohkwiz.com/api/collectioncentres/';
+        } else {
+            this.url = 'http://www.ohkwiz.com/api/camps/';
+        }
+        console.log(this.url);
       axios
-      .get('http://www.ohkwiz.com/api/help/')
+      .get(this.url)
       .then(response => {
           var r = response.data;
         for (var i = 0;i < r.length;i++) {
@@ -106,7 +116,14 @@ export default {
               "properties": {
                 "marker-color": "#ef0e24",
                 "marker-size": "medium",
-                "marker-symbol": ""
+                "marker-symbol": "",
+      icon: {
+        iconUrl: 'https://www.mapbox.com/mapbox.js/assets/images/astronaut1.png',
+        iconSize: [50, 50], // size of the icon
+        iconAnchor: [25, 25], // point of the icon which will correspond to marker's location
+        popupAnchor: [0, -25], // point from which the popup should open relative to the iconAnchor
+        className: 'dot'
+      }
               },
               "geometry": {
                 "type": "Point",
@@ -121,125 +138,130 @@ export default {
           "type": "FeatureCollection",
           "features": fe
         };
-        console.log(d);
-        console.log(d)
-        this.mymap.addSource("earthquakes", {
+try {
+        this.mymap.addSource(event, {
         "type": "geojson",
         "data": d
       })
       this.mymap.addLayer({
-        "id": "earthquakes-heat",
-        "type": "heatmap",
-        "source": "earthquakes",
-        "maxzoom": 9,
-        "paint": {
-            // Increase the heatmap weight based on frequency and property magnitude
-            "heatmap-weight": [
-                "interpolate",
-                ["linear"],
-                ["get", "mag"],
-                0, 0,
-                6, 1
-            ],
-            // Increase the heatmap color weight weight by zoom level
-            // heatmap-intensity is a multiplier on top of heatmap-weight
-            "heatmap-intensity": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                0, 1,
-                12, 6
-            ],
-            // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
-            // Begin color ramp at 0-stop with a 0-transparancy color
-            // to create a blur-like effect.
-            "heatmap-color": [
-                "interpolate",
-                ["linear"],
-                ["heatmap-density"],
-                0, "rgba(33,102,172,0)",
-                0.2, "rgb(103,169,207)",
-                0.4, "rgb(209,229,240)",
-                0.6, "rgb(253,219,199)",
-                0.8, "rgb(239,138,98)",
-                1, "rgb(178,24,43)"
-            ],
-            // Adjust the heatmap radius by zoom level
-            "heatmap-radius": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                0, 2,
-                15, 30
-            ],
-            // Transition from heatmap to circle layer by zoom level
-            "heatmap-opacity": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                7, 1,
-                9, 0
-            ],
-        }
-    }, 'waterway-label');
+    "id": event,
+    "type": "heatmap",
+    "source": event,
+    "maxzoom": 9,
+    "paint": {
+        // Increase the heatmap weight based on frequency and property magnitude
+        "heatmap-weight": [
+            "interpolate",
+            ["linear"],
+            ["get", "mag"],
+            0, 0,
+            6, 1
+        ],
+        // Increase the heatmap color weight weight by zoom level
+        // heatmap-intensity is a multiplier on top of heatmap-weight
+        "heatmap-intensity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            0, 1,
+            12, 6
+        ],
+        // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+        // Begin color ramp at 0-stop with a 0-transparancy color
+        // to create a blur-like effect.
+        "heatmap-color": [
+            "interpolate",
+            ["linear"],
+            ["heatmap-density"],
+            0, "rgba(33,102,172,0)",
+            0.2, "rgb(103,169,207)",
+            0.4, "rgb(209,229,240)",
+            0.6, "rgb(253,219,199)",
+            0.8, "rgb(239,138,98)",
+            1, "rgb(178,24,43)"
+        ],
+        // Adjust the heatmap radius by zoom level
+        "heatmap-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            0, 2,
+            15, 30
+        ],
+        // Transition from heatmap to circle layer by zoom level
+        "heatmap-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            7, 1,
+            9, 0
+        ],
+    }
+}, 'waterway-label');
 
-    this.mymap.addLayer({
-        "id": "earthquakes-point",
-        "type": "circle",
-        "source": "earthquakes",
-        "minzoom": 7,
-        "paint": {
-            // Size circle radius by earthquake magnitude and zoom level
-            "circle-radius": [
-                "interpolate",
-                ["linear"],
-                ["zoom"],
-                7, [
-                    "interpolate",
-                    ["linear"],
-                    ["get", "mag"],
-                    1, 1,
-                    6, 4
-                ],
-                16, [
-                    "interpolate",
-                    ["linear"],
-                    ["get", "mag"],
-                    1, 5,
-                    6, 50
-                ]
-            ],
-            // Color circle by earthquake magnitude
-            "circle-color": [
+this.mymap.addLayer({
+    "id": event + '-p',
+    "type": "circle",
+    "source": event,
+    "minzoom": 7,
+    "paint": {
+        // Size circle radius by earthquake magnitude and zoom level
+        "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            7, [
                 "interpolate",
                 ["linear"],
                 ["get", "mag"],
-                1, "rgba(33,102,172,0)",
-                2, "rgb(103,169,207)",
-                3, "rgb(209,229,240)",
-                4, "rgb(253,219,199)",
-                5, "rgb(239,138,98)",
-                6, "rgb(178,24,43)"
+                1, 1,
+                6, 4
             ],
-            "circle-stroke-color": "white",
-            "circle-stroke-width": 1,
-            // Transition from heatmap to circle layer by zoom level
-            "circle-opacity": [
+            16, [
                 "interpolate",
                 ["linear"],
-                ["zoom"],
-                7, 0,
-                8, 1
+                ["get", "mag"],
+                1, 5,
+                6, 50
             ]
-        }
-    }, 'waterway-label');
+        ],
+        // Color circle by earthquake magnitude
+        "circle-color": [
+            "interpolate",
+            ["linear"],
+            ["get", "mag"],
+            1, "rgba(33,102,172,0.)",
+            2, "rgb(103,169,207)",
+            3, "rgb(209,229,240)",
+            4, "rgb(253,219,199)",
+            5, "rgb(239,138,98)",
+            6, "rgb(178,24,43)"
+        ],
+        "circle-stroke-color": "white",
+        "circle-stroke-width": 1,
+        // Transition from heatmap to circle layer by zoom level
+        "circle-opacity": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            7, 0,
+            8, 1
+        ]
+    }
+}, 'waterway-label');
 
+} catch(err) {
 
+}
+            this.mymap.setLayoutProperty('camp', 'visibility', 'none');
+            this.mymap.setLayoutProperty('help', 'visibility', 'none');
+            this.mymap.setLayoutProperty('collection', 'visibility', 'none');
+            this.mymap.setLayoutProperty(event, 'visibility', 'visible');
       })
     },
     wasclicked(event) {
       console.log(event)
-      this.axiostest()
+      this.axiostest(event)
     }
   }
 }
